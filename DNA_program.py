@@ -8,9 +8,9 @@ clear_tooltip = "Clears all data from output"
 search_tooltip = "Searches for one sequence within another"
 save_tooltip = "Saves all information currently in the window"
 
-layout = [[sg.Text("DNA sequence:")],
+layout = [[sg.Text("Sequence:"),sg.Checkbox("RNA",key="RNA_box")],
           [sg.Input(key="DNA sequence 1"),sg.B("Info",key= "DNA_1_info",tooltip= info_tooltip),sg.B("Reverse Compliment",tooltip= reverse_comp_tooltip)],
-          [sg.Text("DNA sequence to look for:")],
+          [sg.Text("Sequence to look for:")],
           [sg.Input(key= "DNA sequence 2"),sg.B("Info",key= "DNA_2_info",tooltip= info_tooltip)],
           [sg.B("Search",tooltip= search_tooltip),sg.B("Clear",tooltip= clear_tooltip ),sg.B("Save", tooltip= save_tooltip)],
           [sg.Text("File Name"),sg.Input(key ="File name input")],
@@ -55,14 +55,20 @@ while True:
     if DNA_1_use or DNA_2_use == True:
         if DNA_1_use:
             try:
-                DNA_1 = DNA(values["DNA sequence 1"])
+                DNA_1 = DNA(values["DNA sequence 1"]) if values["RNA_box"] == False else DNA(values["DNA sequence 1"],RNA= True)
             except:
-                sg.popup("A character in your DNA sequence is not a,t,c,g")
+                if not values["RNA_box"]: #if RNA box is not selected
+                    sg.popup("A character in your DNA sequence is not a,t,c,g")
+                else:
+                    sg.popup("A character in your DNA sequence is not a,u,c,g")
         if DNA_2_use:
             try:
-                DNA_2 = DNA(values["DNA sequence 2"])
+                DNA_2 = DNA(values["DNA sequence 2"]) if values["RNA_box"] == False else DNA(values["DNA sequence 2"],RNA= True)
             except:
-                sg.popup("A character in your search sequence is not a,t,c,g")
+                if not values["RNA_box"]:
+                    sg.popup("A character in your DNA sequence is not a,t,c,g")
+                else:
+                    sg.popup("A character in your DNA sequence is not a,u,c,g")
 
         if event == "Search" and (DNA_1_use and DNA_2_use) == True:
                 search = DNA_1.sequence_search(DNA_2)
@@ -74,14 +80,14 @@ while True:
                     print("\n"+search)
 
         if event == "DNA_1_info" and DNA_1_use and DNA_1 is not None:
-           print("\n"+DNA_1.full_info())
            if DNA_1.full_info() not in output_list:
                output_list.append(DNA_1.full_info())
+               print("\n" + DNA_1.full_info())
 
         if event == "DNA_2_info" and DNA_2_use and DNA_2 is not None:
             if DNA_2.full_info() not in output_list:
                 output_list.append(DNA_2.full_info())
-            print("\n"+DNA_2.full_info())
+                print("\n"+DNA_2.full_info())
 
         if event == "Reverse Compliment" and DNA_1_use:
             if "Reverse compliment:\n" + DNA_1.raw_sequence + "\n\n" + DNA_1.reverse_comp_sequence not in output_list:

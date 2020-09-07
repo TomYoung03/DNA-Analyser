@@ -5,20 +5,24 @@ class DNA:
     '''
     def __init__(self,sequence,RNA = False):
 
-        self.bases_list = ["a", "t", "c", "g"]
+        self.RNA = RNA
+        self.bases_list = ["a", "t", "c", "g"] if RNA == False else ["a","u","c","g"]
         self.reverse_dict = {"a": "t",
                              "t": "a",
                              "c": "g",
-                             "g": "c"}
+                             "g": "c"} if RNA == False else {"a": "u",
+                                                            "u": "a",
+                                                            "c": "g",
+                                                            "g": "c"}
 
-        self.raw_sequence = sequence.lower().replace(" ","").replace("u","t")
+        self.raw_sequence = sequence.lower().replace(" ","").rstrip()
         self.validate(self.raw_sequence)
         self.formatted_sequence = self.arrange(self.raw_sequence)
         self.reverse_comp_sequence = self.reverse_comp(self.raw_sequence)
 
         self.length = len(self.raw_sequence)
         self.A_count = self.raw_sequence.count("a")
-        self.T_count = self.raw_sequence.count("t")
+        self.T_count = self.raw_sequence.count("t") if RNA == False else self.raw_sequence.count("u")
         self.C_count = self.raw_sequence.count("c")
         self.G_count = self.raw_sequence.count("g")
 
@@ -85,16 +89,28 @@ class DNA:
 
     def full_info(self):
 
-        info = ("Raw sequence: " + self.raw_sequence + "\n\nBase count:"
+        #RNA info has T references modified to U
+        DNA_info = ("Raw sequence: " + self.raw_sequence + "\n\nBase count:"
                    + "\nA: "+ str(self.A_count) + " T: " + str(self.T_count) + " C: "+ str(self.C_count) + " G: "+ str(self.G_count)
                    +"\n\nAT percentage: " + str(self.per_AT) + "% CG percentage: " + str(self.per_CG) +"%"
                    +"\n\nFormatted sequence: " + self.formatted_sequence
                    )
+        RNA_info = ("Raw sequence: " + self.raw_sequence + "\n\nBase count:"
+                   + "\nA: "+ str(self.A_count) + " U: " + str(self.T_count) + " C: "+ str(self.C_count) + " G: "+ str(self.G_count)
+                   +"\n\nAU percentage: " + str(self.per_AT) + "% CG percentage: " + str(self.per_CG) +"%"
+                   +"\n\nFormatted sequence: " + self.formatted_sequence
+                   )
+        info = DNA_info if self.RNA == False else RNA_info
         return info
 
+    def convert_RNA(self):
 
+        if not self.RNA:
+            RNA_seq = [ base if base != "t" else "u" for base in self.raw_sequence ]
+            return "".join(RNA_seq)
+        else:
+            return self.raw_sequence
 
     def __str__(self):
         return self.raw_sequence
-
 
