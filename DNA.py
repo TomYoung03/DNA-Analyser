@@ -14,6 +14,24 @@ class DNA:
                                                             "u": "a",
                                                             "c": "g",
                                                             "g": "c"}
+        self.DNA_prot_dictionary = {
+            'ATA': 'I', 'ATC': 'I', 'ATT': 'I', 'ATG': 'M',
+            'ACA': 'T', 'ACC': 'T', 'ACG': 'T', 'ACT': 'T',
+            'AAC': 'N', 'AAT': 'N', 'AAA': 'K', 'AAG': 'K',
+            'AGC': 'S', 'AGT': 'S', 'AGA': 'R', 'AGG': 'R',
+            'CTA': 'L', 'CTC': 'L', 'CTG': 'L', 'CTT': 'L',
+            'CCA': 'P', 'CCC': 'P', 'CCG': 'P', 'CCT': 'P',
+            'CAC': 'H', 'CAT': 'H', 'CAA': 'Q', 'CAG': 'Q',
+            'CGA': 'R', 'CGC': 'R', 'CGG': 'R', 'CGT': 'R',
+            'GTA': 'V', 'GTC': 'V', 'GTG': 'V', 'GTT': 'V',
+            'GCA': 'A', 'GCC': 'A', 'GCG': 'A', 'GCT': 'A',
+            'GAC': 'D', 'GAT': 'D', 'GAA': 'E', 'GAG': 'E',
+            'GGA': 'G', 'GGC': 'G', 'GGG': 'G', 'GGT': 'G',
+            'TCA': 'S', 'TCC': 'S', 'TCG': 'S', 'TCT': 'S',
+            'TTC': 'F', 'TTT': 'F', 'TTA': 'L', 'TTG': 'L',
+            'TAC': 'Y', 'TAT': 'Y', 'TAA': 'STOP', 'TAG': 'STOP',
+            'TGC': 'C', 'TGT': 'C', 'TGA': 'STOP', 'TGG': 'W',
+        }
 
         self.raw_sequence = sequence.lower().replace(" ","").rstrip()
         self.validate(self.raw_sequence)
@@ -33,7 +51,7 @@ class DNA:
 
         for base in list(sequence):
             if base not in self.bases_list:
-                raise Exception("Incorrect base")
+                raise DNA_exceptions("Incorrect base: " + base +" in sequence")
 
     def arrange(self,sequence):
         seq_list = list(sequence)
@@ -111,6 +129,62 @@ class DNA:
         else:
             return self.raw_sequence
 
-    def __str__(self):
-        return self.raw_sequence
+    def translate(self):
+        prot_seq = []
+        #loop goes through range increasing by 3 each time
+        for i in range(0,len(self.raw_sequence),3):
+            try:
+                codon = self.raw_sequence[i:i+3].replace("u","t").upper()
+                prot_seq.append(self.DNA_prot_dictionary[codon])
+            except:
+                #deals with sequence that dont perfectly divide by 3
+                pass
+        return " ".join(prot_seq)
 
+
+    def modify(self,new_amino_acid,location):
+
+        try:
+            #looks at codon location and finds amino acid via dict
+            current_amino_acid = self.DNA_prot_dictionary[self.raw_sequence[location:location+3].upper()]
+            #codon to be changed
+            current_codon = self.raw_sequence[location:location+3]
+            #creates a list of the keys (codons) for amino acids matching the one given in new_amino_acid
+            new_codons_list = [key for key,value in self.DNA_prot_dictionary.items() if value == new_amino_acid.upper()]
+        except:
+            #can have errors if e.g location + 3 is out of index
+            return False
+
+        if new_amino_acid == current_amino_acid:
+            print("Amino acid " + new_amino_acid + "is already at codon " + current_codon)
+        else:
+            #output eventuall contains all information needed
+            output = ["Your options are:",]
+            for codon in new_codons_list:
+                output.append(current_codon + " ----> " + codon)
+                #loop adds the new codon to the sequence letter by letter in upercase
+                # need to reset sequence to original every loop
+                sequence = list(self.raw_sequence)
+                for i in range(0,3):
+                    sequence[location+i] = list(codon)[i].upper()
+                output.append("Sequence: " + "".join(sequence))
+
+            return "\n".join(output)
+
+
+
+
+
+    def __str__(self):
+        #when used a string returns the raw original sequence
+        return self.raw_sequence
+    def __len__(self):
+        return len(self.raw_sequence)
+
+
+
+class DNA_exceptions(Exception):
+
+     def __init__(self,message):
+         super(DNA_exceptions,self).__init__(message)
+         self.message = message
